@@ -27,7 +27,7 @@ body{
 </head>
 
 <body>
-# title of the page #
+#### title of the page #
 <h1>PostDoctoring Directory</h1>
 
 # naming this page as a directory #
@@ -43,24 +43,27 @@ const sheetURL =
 const response = await fetch(sheetURL);
 const csv = await response.text();
 
+### do not want header ####
 const rows = csv.split("\n");
 
 const container = document.getElementById("directory");
 container.innerHTML = "";
 
+
+  ## reading the spreadsheet ##
 rows.forEach(row => {
 
 const cols = row.split(",");
 
-const name = cols[0];
-const category = cols[1];
-const description = cols[2];
+const PI = cols[4];
+const School = cols[5];
+const Department = cols[6];
 
 const card = `
 <div class="card">
-<div class="name">${name}</div>
-<div><b>Category:</b> ${category}</div>
-<p>${description}</p>
+<div class="name">${PI}</div>
+<div><b>Category:</b> ${School}</div>
+<p>${Department}</p>
 </div>
 `;
 
