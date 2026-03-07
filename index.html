@@ -11,8 +11,8 @@ body{
   padding:20px;
 }
 
-.entry{
-  border:1px solid #ccc;
+.card{
+  border:1px solid #ddd;
   border-radius:8px;
   padding:15px;
   margin-bottom:15px;
@@ -30,47 +30,46 @@ body{
 
 <h1>PostDoctoring Directory</h1>
 
-<div id="directory">Loading directory...</div>
+<div id="directory">Loading data...</div>
 
 <script>
 
-async function loadDirectory(){
+async function loadSheet(){
 
-  const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv";
+const sheetURL =
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv";
 
-  const response = await fetch(sheetURL);
-  const csv = await response.text();
+const response = await fetch(sheetURL);
+const csv = await response.text();
 
-  const rows = csv.split("\n").slice(1);
+const rows = csv.split("\n").slice(1);
 
-  const container = document.getElementById("directory");
-  container.innerHTML = "";
+const container = document.getElementById("directory");
+container.innerHTML = "";
 
-  rows.forEach(row => {
+rows.forEach(row => {
 
-    const columns = row.split(",");
+const cols = row.split(",");
 
-    const name = columns[0];
-    const category = columns[1];
-    const description = columns[2];
-    const website = columns[3];
+const name = cols[0];
+const category = cols[1];
+const description = cols[2];
 
-    const entry = `
-      <div class="entry">
-        <div class="name">${name}</div>
-        <div><b>Category:</b> ${category}</div>
-        <p>${description}</p>
-        <a href="${website}" target="_blank">Visit Website</a>
-      </div>
-    `;
+const card = `
+<div class="card">
+<div class="name">${name}</div>
+<div><b>Category:</b> ${category}</div>
+<p>${description}</p>
+</div>
+`;
 
-    container.innerHTML += entry;
+container.innerHTML += card;
 
-  });
+});
 
 }
 
-loadDirectory();
+loadSheet();
 
 </script>
 
