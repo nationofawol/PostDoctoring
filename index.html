@@ -27,9 +27,10 @@ body{
 </head>
 
 <body>
-
+# title of the page #
 <h1>PostDoctoring Directory</h1>
 
+# naming this page as a directory #
 <div id="directory">Loading data...</div>
 
 <script>
@@ -42,7 +43,7 @@ const sheetURL =
 const response = await fetch(sheetURL);
 const csv = await response.text();
 
-const rows = csv.split("\n").slice(1);
+const rows = csv.split("\n");
 
 const container = document.getElementById("directory");
 container.innerHTML = "";
