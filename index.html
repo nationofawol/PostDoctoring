@@ -1,1 +1,88 @@
-<h1>Hello world</h1>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PostDoctoring</title>
+
+  <style>
+    body{
+      font-family: Arial;
+      max-width:900px;
+      margin:auto;
+      padding:20px;
+    }
+
+    .card{
+      border:1px solid #ddd;
+      border-radius:8px;
+      padding:15px;
+      margin-bottom:15px;
+    }
+
+    .title{
+      font-weight:bold;
+      font-size:20px;
+    }
+
+    nav{
+      margin-bottom:20px;
+    }
+
+    nav a{
+      margin-right:15px;
+    }
+  </style>
+</head>
+
+<body>
+
+<nav>
+  <a href="/">List</a>
+  <a href="/map.html">Map</a>
+</nav>
+
+<h1>PostDoctoring Directory</h1>
+
+<div id="list">Loading...</div>
+
+<script>
+
+async function loadSheet(){
+
+  const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv";
+
+  const response = await fetch(sheetURL);
+  const data = await response.text();
+
+  const rows = data.split("\n").slice(1);
+
+  const container = document.getElementById("list");
+  container.innerHTML = "";
+
+  rows.forEach(row => {
+
+    const cols = row.split(",");
+
+    const name = cols[0];
+    const category = cols[1];
+    const description = cols[2];
+
+    const card = `
+      <div class="card">
+        <div class="title">${name}</div>
+        <div>${category}</div>
+        <p>${description}</p>
+      </div>
+    `;
+
+    container.innerHTML += card;
+
+  });
+
+}
+
+loadSheet();
+
+</script>
+
+</body>
+</html>
