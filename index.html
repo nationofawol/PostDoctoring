@@ -1,63 +1,52 @@
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script>
-
 async function loadSheet(){
 
-const sheetURL =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv";
+  const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv";
 
-const response = await fetch(sheetURL);
-const csv = await response.text();
+  const response = await fetch(sheetURL);
+  const csv = await response.text();
 
-const rows = csv.split("\n");
+  // parse CSV using Papa Parse with headers
+  const results = Papa.parse(csv, {
+    header: true,    // use the first row as headers
+    skipEmptyLines: true
+  });
 
-// first row = column titles
-const headers = rows[0].split(",");
+  const data = results.data; // array of objects
 
-// all other rows = data
-const dataRows = rows.slice(1);
+  const container = document.getElementById("directory");
+  container.innerHTML = "";
 
-const container = document.getElementById("directory");
-container.innerHTML = "";
+  // loop through each row object
+  data.forEach(row => {
 
-// go through each spreadsheet row
-dataRows.forEach(row => {
+    let cardContent = "";
 
-if(!row) return;
+    // for each header in the row, add header + value
+    for(const header in row){
 
-const cols = row.split(",");
+      if(row[header]){  // skip empty cells
+        cardContent += `
+        <div>
+          <b>${header}</b><br>
+          ${row[header]}
+        </div><br>
+        `;
+      }
+    }
 
-let cardContent = "";
+    const card = `
+      <div class="card">
+        ${cardContent}
+      </div>
+    `;
 
-// pair each column with its header
-headers.forEach((header, index) => {
+    container.innerHTML += card;
 
-const value = cols[index];
-
-if(value){
-
-cardContent += `
-<div>
-<b>${header}</b><br>
-${value}
-</div><br>
-`;
-
-}
-
-});
-
-const card = `
-<div class="card">
-${cardContent}
-</div>
-`;
-
-container.innerHTML += card;
-
-});
+  });
 
 }
 
 loadSheet();
-
 </script>
