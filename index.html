@@ -1,18 +1,1 @@
-<script>
-async function loadData() {
-  const res = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv");
-  const text = await res.text();
-
-  const rows = text.split("\n").slice(1);
-
-  rows.forEach(row => {
-    const [name, lat, lng] = row.split(",");
-
-    L.marker([lat, lng])
-      .addTo(map)
-      .bindPopup(name);
-  });
-}
-
-loadData();
-</script>
+<h1>Hello world</h1>
