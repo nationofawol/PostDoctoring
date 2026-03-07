@@ -44,8 +44,7 @@ const sheetURL =
 const response = await fetch(sheetURL);
 const csv = await response.text();
 
- //title of the page
-const rows = csv.split("\n");
+const rows = csv.split("\n").slice(1);
 
 const container = document.getElementById("directory");
 container.innerHTML = "";
