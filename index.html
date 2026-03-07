@@ -18,9 +18,14 @@
       margin-bottom:15px;
     }
 
-    .name{
+    .card-title{
       font-size:20px;
       font-weight:bold;
+      margin-bottom:10px;
+    }
+
+    .field{
+      margin-bottom:5px;
     }
   </style>
 
@@ -46,8 +51,8 @@ async function loadSheet(){
 
     // parse CSV using Papa Parse
     const results = Papa.parse(csv, {
-      header: true,        // use first row as headers
-      skipEmptyLines: true // skip empty rows
+      header: true,
+      skipEmptyLines: true
     });
 
     const data = results.data;
@@ -55,22 +60,31 @@ async function loadSheet(){
     const container = document.getElementById("directory");
     container.innerHTML = "";
 
-    // loop through each row
     data.forEach(row => {
+
+      // Use "PI" as the title
+      const title = row["PI"] || "No Name";
+
       let cardContent = "";
 
+      // loop through all columns except "PI"
       for(const header in row){
-        if(row[header]){
+        if(header !== "PI" && row[header]){
           cardContent += `
-            <div>
-              <b>${header}</b><br>
-              ${row[header]}
-            </div><br>
+            <div class="field">
+              <b>${header}:</b> ${row[header]}
+            </div>
           `;
         }
       }
 
-      const card = `<div class="card">${cardContent}</div>`;
+      const card = `
+        <div class="card">
+          <div class="card-title">${title}</div>
+          ${cardContent}
+        </div>
+      `;
+
       container.innerHTML += card;
     });
 
@@ -78,6 +92,7 @@ async function loadSheet(){
     console.error("Error loading spreadsheet:", error);
     document.getElementById("directory").innerHTML = "Failed to load data.";
   }
+
 }
 
 // run the function
