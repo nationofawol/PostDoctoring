@@ -1,18 +1,73 @@
-<script>
-async function loadData() {
-  const res = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv");
-  const text = await res.text();
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Locations</title>
 
-  const rows = text.split("\n").slice(1);
+  <style>
+    body{
+      font-family: Arial;
+      max-width:900px;
+      margin:auto;
+    }
+
+    .card{
+      border:1px solid #ddd;
+      padding:15px;
+      margin:10px 0;
+      border-radius:8px;
+    }
+
+    .title{
+      font-size:20px;
+      font-weight:bold;
+    }
+  </style>
+
+</head>
+<body>
+
+<h1>Location Directory</h1>
+
+<div id="list"></div>
+
+<script>
+
+async function loadSheet(){
+
+  const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv";
+
+  const response = await fetch(url);
+  const data = await response.text();
+
+  const rows = data.split("\n").slice(1);
+
+  const container = document.getElementById("list");
 
   rows.forEach(row => {
-    const [name, lat, lng] = row.split(",");
 
-    L.marker([lat, lng])
-      .addTo(map)
-      .bindPopup(name);
+    const cols = row.split(",");
+
+    const name = cols[0];
+    const category = cols[1];
+    const description = cols[2];
+
+    const card = `
+      <div class="card">
+        <div class="title">${name}</div>
+        <div>${category}</div>
+        <p>${description}</p>
+      </div>
+    `;
+
+    container.innerHTML += card;
+
   });
+
 }
 
-loadData();
+loadSheet();
+
 </script>
+
+</body>
+</html>
