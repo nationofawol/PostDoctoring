@@ -6,7 +6,7 @@
   <style>
     body{
       font-family: Arial;
-      max-width:900px;
+      max-width:700px;
       margin:auto;
       padding:20px;
     }
@@ -22,7 +22,7 @@
   background-color:#e0e0e0;
 }
     .accepted{
-  background-color:#98FB98;
+  background-color:#90D5FF;
 }
 
      .rejected{
@@ -34,7 +34,31 @@
       font-weight:bold;
       margin-bottom:10px;
     }
+    
+.legend{
+  position:fixed;
+  right:20px;
+  top:80px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  padding:15px;
+  width:150px;
+  background:white;
+}
 
+.legend-item{
+  display:flex;
+  align-items:center;
+  margin-bottom:8px;
+}
+
+.legend-color{
+  width:15px;
+  height:15px;
+  margin-right:8px;
+  border:1px solid #999;
+}
+    
     .field{
       margin-bottom:5px;
     }
@@ -131,6 +155,26 @@ for(const header in row){
   }
 
 }
+
+
+  <div class="legend">
+  <b>Status</b>
+
+  <div class="legend-item">
+    <div class="legend-color" style="background:#e0e0e0;"></div>
+    Emailed
+  </div>
+
+  <div class="legend-item">
+    <div class="legend-color" style="background:#98FB98;"></div>
+    Accepted
+  </div>
+
+  <div class="legend-item">
+    <div class="legend-color" style="background:#FFCCCB;"></div>
+    Rejected
+  </div>
+</div>
 
 // run the function
 loadSheet();
