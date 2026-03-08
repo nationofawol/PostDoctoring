@@ -6,208 +6,168 @@
   <style>
     body{
       font-family: "Monaco","Courier New", monospace;
-      max-width:700px;
+      max-width:900px;
       margin:auto;
       background-color: #000;
       color: #FFFFFF;
       padding:20px;
     }
     
-.nav{
-  margin-bottom:20px;
-  font-weight:bold;
-}
+    .nav{
+      margin-bottom:20px;
+      font-weight:bold;
+    }
+
     .card{
       border:1px solid #FFFFFF;
       border-radius:8px;
       padding:15px;
       margin-bottom:15px;
+      cursor: pointer;
     }
 
-    .emailed{
-  background-color:#A9A9A9;
-}
-    .accepted{
-  background-color:#6495ED;
-}
-
-     .rejected{
-  background-color:#EE4B2B;
-}
+    .emailed{ background-color:#A9A9A9; }
+    .accepted{ background-color:#6495ED; }
+    .rejected{ background-color:#EE4B2B; }
 
     .card-title{
       font-size:20px;
       font-weight:bold;
       margin-bottom:10px;
     }
-    
-.legend{
-  position:fixed;
-  right:20px;
-  top:80px;
-  border:1px solid #ddd;
-  border-radius:8px;
-  padding:15px;
-  width:150px;
-  background:#000;
-}
 
-.legend-item{
-  display:flex;
-  align-items:center;
-  margin-bottom:8px;
-}
+    .legend{
+      position:fixed;
+      right:20px;
+      top:80px;
+      border:1px solid #ddd;
+      border-radius:8px;
+      padding:15px;
+      width:150px;
+      background:#000;
+    }
 
-.legend-color{
-  width:15px;
-  height:15px;
-  margin-right:8px;
-  border:1px solid #999;
-}
-    
     .field{
       margin-bottom:5px;
     }
+
+    #map{
+      height:400px;
+      width:100%;
+      margin-bottom:20px;
+      border:1px solid #fff;
+      border-radius:8px;
+    }
   </style>
 
-  <!-- Include Papa Parse -->
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Papa Parse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 
 <body>
-
-    
 <div class="nav">
   <a href="index.html">Directory</a> |
   <a href="map.html">Map</a>
 </div>
 
-  
-<h1>PostDoctoring</h1>
+<h1>PostDoctoring Directory</h1>
 
-  
-  <div class="legend">
+<div class="legend">
   <b>Status</b>
-
-  <div class="legend-item">
-  <span style="color:#A9A9A9;">Emailed</span>
+  <div><span style="color:#A9A9A9;">Emailed</span></div>
+  <div><span style="color:#6495ED;">Accepted</span></div>
+  <div><span style="color:#EE4B2B;">Rejected</span></div>
 </div>
 
- <div class="legend-item">
-  <span style="color:#6495ED;">Accepted</span>
-</div>
+<!-- Map at top -->
+<div id="map"></div>
 
-  <div class="legend-item">
-  <span style="color:#EE4B2B;">Rejected</span>
-</div>
-</div>
-  
+<!-- Directory -->
 <div id="directory">Loading data...</div>
 
 <script>
-  
 async function loadSheet(){
+  const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv";
+  const response = await fetch(sheetURL);
+  const csv = await response.text();
+  const results = Papa.parse(csv, {header:true, skipEmptyLines:true});
+  const data = results.data;
 
-  try {
+  const container = document.getElementById("directory");
+  container.innerHTML = "";
 
-    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv";
+  // Initialize map
+  const map = L.map("map").setView([39,-98],4);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
 
-    const response = await fetch(sheetURL);
-    const csv = await response.text();
+  let markers = [];
 
-    // parse CSV using Papa Parse
-    const results = Papa.parse(csv, {
-      header: true,
-      skipEmptyLines: true
+  data.forEach(row => {
+    const lat = parseFloat(row["Latitude"]);
+    const lon = parseFloat(row["Longitude"]);
+    if(!lat || !lon) return;
+
+    // Status-based class
+    let cardClass = "card";
+    const emailed = row["Did I Email Them?"];
+    const decision = row["Accepted or Rejected?"];
+    if(emailed === "Yes") cardClass += " emailed";
+    if(decision === "Accepted") cardClass += " accepted";
+    if(decision === "Rejected") cardClass += " rejected";
+
+    // Card content
+    let cardContent = "";
+    for(const header in row){
+      if(["PI","Did I Email Them?","Accepted or Rejected?","ROI","Latitude","Longitude","Address"].includes(header)) continue;
+      if(row[header]) cardContent += `<div class="field"><b>${header}:</b> ${row[header]}</div>`;
+    }
+
+    // Unique ID
+    const id = row["PI"].replace(/\s+/g,"_").replace(/[^\w]/g,"");
+    const card = document.createElement("div");
+    card.id = `card_${id}`;
+    card.className = cardClass;
+    card.innerHTML = `<div class="card-title">${row["PI"]}</div>${cardContent}`;
+    container.appendChild(card);
+
+    // Create marker
+    let color = "#A9A9A9";
+    if(decision==="Accepted") color="#6495ED";
+    if(decision==="Rejected") color="#EE4B2B";
+    const marker = L.circleMarker([lat, lon], {
+      radius:8, fillColor:color, color:"#555", weight:1, fillOpacity:0.8
+    }).addTo(map);
+    marker.myID = id;
+
+    // Marker click → highlight card
+    marker.on("click",()=>{
+      const c = document.getElementById(`card_${marker.myID}`);
+      if(c){
+        c.scrollIntoView({behavior:"smooth", block:"center"});
+        c.style.border="2px solid #FFF";
+        setTimeout(()=>c.style.border="1px solid #FFFFFF",2000);
+      }
     });
 
-    const data = results.data;
-
-    const container = document.getElementById("directory");
-    container.innerHTML = "";
-
-    data.forEach(row => {
-      
-      
-let cardClass = "card";
-
-const emailed = row["Did I Email Them?"];
-const decision = row["Accepted or Rejected?"];
-
-if(emailed === "Yes"){
-  cardClass += " emailed";
-}
-
-if(decision === "Accepted"){
-  cardClass += " accepted";
-}
-
-if(decision === "Rejected"){
-  cardClass += " rejected";
-}
-
-      
-      // Use "PI" as the title
-      const title = row["PI"] || "No Name";
-
-      let cardContent = "";
-
-      // loop through all columns except "PI"
-for(const header in row){
-
-  // skip columns we don't want displayed
-  if(header === "PI" || header === "Did I Email Them?" || header === "Accepted or Rejected?" || header === "ROI" || header === "Address"){
-    continue;
-  }
-
-  if(row[header]){
-    cardContent += `
-      <div class="field">
-        <b>${header}:</b> ${row[header]}
-      </div>
-    `;
-  }
-
-}
-
-      const card = `
-  <div class="${cardClass}">
-    <div class="card-title">${title}</div>
-    ${cardContent}
-  </div>
-`;
-
-      // Generate a unique ID from PI
-const id = row["PI"].replace(/\s+/g, "_"); // e.g., "John Doe" → "John_Doe"
-
-// Create the card
-const card = document.createElement("div");
-card.id = `card_${id}`; // unique card ID
-card.className = cardClass;
-card.innerHTML = `<div class="card-title">${row["PI"]}</div>${cardContent}`;
-container.appendChild(card);
-
-// Store the marker with the same ID
-marker.myID = id;
-      
-      container.innerHTML += card;
+    // Card click → zoom to marker
+    card.addEventListener("click",()=>{
+      map.setView([lat, lon],12);
+      marker.openPopup();
     });
 
-  } catch(error){
-    console.error("Error loading spreadsheet:", error);
-    document.getElementById("directory").innerHTML = "Failed to load data.";
-  }
-
+    // Bind popup
+    marker.bindPopup(`<b>${row["PI"]}</b><br>ROI: ${row["ROI"] || ""}<br>Status: ${decision || emailed || "Not Emailed"}`);
+    
+    markers.push(marker);
+  });
 }
-  
-card.addEventListener("click", () => {
-  map.setView([lat, lon], 12); // zoom to marker location
-  marker.openPopup();
-});
 
-// run the function
+// Run
 loadSheet();
 </script>
-
 </body>
 </html>
