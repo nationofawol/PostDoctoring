@@ -3,187 +3,98 @@
 <head>
   <title>PostDoctoring Map</title>
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
   <style>
-    body{
-      font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-      margin:0;
-      padding:0;
-    }
-
-    .nav{
-      padding:10px;
-      font-weight:bold;
-      background:#f2f2f2;
-    }
-
-    .nav a{
-      margin-right:10px;
-      text-decoration:none;
-      color:#000;
-    }
-
-    #filters{
-      padding:10px;
-      background:#f9f9f9;
-    }
-
-    #map{
-      height:90vh;
-      width:100%;
-    }
+    body{ font-family: Monaco, monospace; margin:0; padding:0; }
+    .nav{ padding:10px; font-weight:bold; background:#f2f2f2;}
+    .nav a{ margin-right:10px; text-decoration:none; color:#000; }
+    #filters{ padding:10px; background:#f9f9f9; }
+    #map{ height:90vh; width:100%; }
   </style>
 
-  <!-- Leaflet JS -->
+  <!-- Leaflet CSS/JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
   <!-- Papa Parse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
 </head>
 
 <body>
+<div class="nav">
+  <a href="index.html">Directory</a> |
+  <a href="map.html">Map</a>
+</div>
 
-  <!-- Navigation -->
-  <div class="nav">
-    <a href="index.html">Directory</a> |
-    <a href="map.html">Map</a>
-  </div>
+<div id="filters">
+  <label for="roiFilter">ROI:</label>
+  <select id="roiFilter"><option value="all">All</option></select>
 
-  <!-- Filters -->
-  <div id="filters">
-    <label for="roiFilter">ROI:</label>
-    <select id="roiFilter">
-      <option value="all">All</option>
-    </select>
+  <label for="statusFilter" style="margin-left:20px;">Status:</label>
+  <select id="statusFilter">
+    <option value="all">All</option>
+    <option value="Emailed">Emailed</option>
+    <option value="Accepted">Accepted</option>
+    <option value="Rejected">Rejected</option>
+  </select>
+</div>
 
-    <label for="statusFilter" style="margin-left:20px;">Status:</label>
-    <select id="statusFilter">
-      <option value="all">All</option>
-      <option value="Emailed">Emailed</option>
-      <option value="Accepted">Accepted</option>
-      <option value="Rejected">Rejected</option>
-    </select>
-  </div>
+<div id="map"></div>
 
-  <!-- Map -->
-  <div id="map"></div>
+<script>
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv";
+const map = L.map("map").setView([39,-98],4);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
+let markers=[];
 
-  <script>
-    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv";
+async function loadSheet(){
+  const resp = await fetch(sheetURL);
+  const csv = await resp.text();
+  const data = Papa.parse(csv,{header:true, skipEmptyLines:true}).data;
 
-    // Initialize map
-    const map = L.map("map").setView([39,-98],4);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-      attribution:"© OpenStreetMap"
-    }).addTo(map);
+  const roiSet = new Set();
+  data.forEach(r=>{ if(r["ROI"]) roiSet.add(r["ROI"]); });
+  Array.from(roiSet).forEach(v=>{
+    const opt=document.createElement("option");
+    opt.value=v; opt.textContent=v;
+    document.getElementById("roiFilter").appendChild(opt);
+  });
 
-    let markers = [];
+  data.forEach(row=>{
+    const lat=parseFloat(row["Latitude"]);
+    const lon=parseFloat(row["Longitude"]);
+    if(!lat||!lon) return;
+    const emailed=row["Did I Email Them?"];
+    const decision=row["Accepted or Rejected?"];
+    let status="Not Emailed";
+    if(emailed==="Yes") status="Emailed";
+    if(decision==="Accepted") status="Accepted";
+    if(decision==="Rejected") status="Rejected";
+    let color="gray";
+    if(status==="Emailed") color="gray";
+    if(status==="Accepted") color="#6495ED";
+    if(status==="Rejected") color="#EE4B2B";
+    const marker=L.circleMarker([lat, lon],{radius:8, fillColor:color,color:"#555",weight:1, fillOpacity:0.8}).addTo(map);
+    marker.roi=row["ROI"];
+    marker.status=status;
+    marker.bindPopup(`<b>${row["PI"]}</b><br>ROI: ${row["ROI"] || ""}<br>Status: ${status}`);
+    markers.push(marker);
+  });
+}
 
-    async function loadSheet() {
-      const response = await fetch(sheetURL);
-      const csv = await response.text();
+function updateMarkers(){
+  const selectedROI=document.getElementById("roiFilter").value;
+  const selectedStatus=document.getElementById("statusFilter").value;
+  markers.forEach(m=>{
+    const roiMatch=selectedROI==="all"||m.roi===selectedROI;
+    const statusMatch=selectedStatus==="all"||m.status===selectedStatus;
+    if(roiMatch&&statusMatch) m.addTo(map);
+    else map.removeLayer(m);
+  });
+}
 
-      const results = Papa.parse(csv,{
-        header:true,
-        skipEmptyLines:true
-      });
+document.getElementById("roiFilter").addEventListener("change",updateMarkers);
+document.getElementById("statusFilter").addEventListener("change",updateMarkers);
 
-      const data = results.data;
-
-      // Build dynamic ROI options
-      const roiFilter = document.getElementById("roiFilter");
-      const roiSet = new Set();
-      data.forEach(row => {
-        if(row["ROI"]) roiSet.add(row["ROI"]);
-      });
-      Array.from(roiSet).forEach(roiValue => {
-        const option = document.createElement("option");
-        option.value = roiValue;
-        option.textContent = roiValue;
-        roiFilter.appendChild(option);
-      });
-
-      // Create markers
-      data.forEach(row => {
-        const lat = parseFloat(row["Latitude"]);
-        const lon = parseFloat(row["Longitude"]);
-        if(!lat || !lon) return;
-
-        const name = row["PI"] || "No Name";
-        const school = row["School"] || "";
-        const roi = row["ROI"] || "";
-        const decision = row["Accepted or Rejected?"] || "";
-        const emailed = row["Did I Email Them?"] || "";
-
-        // Determine status
-        let status = "Not Emailed";
-        if(emailed === "Yes") status = "Emailed";
-        if(decision === "Accepted") status = "Accepted";
-        if(decision === "Rejected") status = "Rejected";
-
-        // Marker color
-        let color = "gray";
-        if(status === "Emailed") color = "gray";
-        if(status === "Accepted") color = "#90D5FF";
-        if(status === "Rejected") color = "#FFCCCB";
-
-        const marker = L.circleMarker([lat, lon], {
-          radius:8,
-          fillColor: color,
-          color:"#555",
-          weight:1,
-          opacity:1,
-          fillOpacity:0.8
-        });
-
-        marker.bindPopup(`<b>${name}</b><br>${school}<br>ROI: ${roi}<br>Status: ${status}`);
-
-        marker.roi = roi;
-        marker.status = status;
-
-        marker.addTo(map);
-        markers.push(marker);
-      });
-    }
-
-    function updateMarkers(){
-      const selectedROI = document.getElementById("roiFilter").value;
-      const selectedStatus = document.getElementById("statusFilter").value;
-
-      markers.forEach(marker => {
-        const matchesROI = selectedROI === "all" || marker.roi === selectedROI;
-        const matchesStatus = selectedStatus === "all" || marker.status === selectedStatus;
-
-        if(matchesROI && matchesStatus){
-          marker.addTo(map);
-        } else {
-          map.removeLayer(marker);
-        }
-      });
-    }
-
-    
-    document.getElementById("roiFilter").addEventListener("change", updateMarkers);
-    document.getElementById("statusFilter").addEventListener("change", updateMarkers);
-
-
-marker.on("click", () => {
-  const card = document.getElementById(`card_${marker.myID}`);
-  if(card){
-    // Scroll to card
-    card.scrollIntoView({behavior:"smooth", block:"center"});
-    // Highlight visually
-    card.style.border = "2px solid #000";
-    setTimeout(()=> card.style.border = "1px solid #ddd", 2000);
-  }
-});
-    
-    
-    loadSheet();
-  </script>
-
+loadSheet();
+</script>
 </body>
 </html>
