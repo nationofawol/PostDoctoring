@@ -199,7 +199,11 @@ marker.myID = id;
   }
 
 }
-
+  
+card.addEventListener("click", () => {
+  map.setView([lat, lon], 12); // zoom to marker location
+  marker.openPopup();
+});
 
 // run the function
 loadSheet();
