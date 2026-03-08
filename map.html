@@ -54,10 +54,10 @@
 
   <!-- Filters -->
   <div id="filters">
-   <label for="roiFilter">ROI:</label>
-<select id="roiFilter">
-  <option value="all">All</option>
-</select>
+    <label for="roiFilter">ROI:</label>
+    <select id="roiFilter">
+      <option value="all">All</option>
+    </select>
 
     <label for="statusFilter" style="margin-left:20px;">Status:</label>
     <select id="statusFilter">
@@ -93,6 +93,20 @@
 
       const data = results.data;
 
+      // Build dynamic ROI options
+      const roiFilter = document.getElementById("roiFilter");
+      const roiSet = new Set();
+      data.forEach(row => {
+        if(row["ROI"]) roiSet.add(row["ROI"]);
+      });
+      Array.from(roiSet).forEach(roiValue => {
+        const option = document.createElement("option");
+        option.value = roiValue;
+        option.textContent = roiValue;
+        roiFilter.appendChild(option);
+      });
+
+      // Create markers
       data.forEach(row => {
         const lat = parseFloat(row["Latitude"]);
         const lon = parseFloat(row["Longitude"]);
@@ -110,7 +124,7 @@
         if(decision === "Accepted") status = "Accepted";
         if(decision === "Rejected") status = "Rejected";
 
-        // Marker color based on status
+        // Marker color
         let color = "gray";
         if(status === "Emailed") color = "gray";
         if(status === "Accepted") color = "#90D5FF";
@@ -127,7 +141,6 @@
 
         marker.bindPopup(`<b>${name}</b><br>${school}<br>ROI: ${roi}<br>Status: ${status}`);
 
-        // Attach properties for filtering
         marker.roi = roi;
         marker.status = status;
 
@@ -136,7 +149,6 @@
       });
     }
 
-    // Update markers based on filters
     function updateMarkers(){
       const selectedROI = document.getElementById("roiFilter").value;
       const selectedStatus = document.getElementById("statusFilter").value;
