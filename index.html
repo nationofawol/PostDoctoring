@@ -7,7 +7,21 @@
     .nav{ margin-bottom:20px; font-weight:bold; color: CBC3E3;}
     .card{ border:1px solid #fff; border-radius:8px; padding:15px; margin-bottom:15px; cursor:pointer;}
     .emailed{ background-color:#A9A9A9; }
-    .nav a.active {color: #D8BFD8; /* light purple */font-weight: bold; /* optional: highlight further */}
+    .nav a:link,
+.nav a:visited {
+  color: #D8BFD8;  /* light purple for normal and visited links */
+  text-decoration: none;
+}
+
+.nav a:hover,
+.nav a:active {
+  color: #E6CFE6;  /* slightly lighter on hover/click */
+}
+
+.nav a.active {
+  color: #D8BFD8;  /* light purple for current page */
+  font-weight: bold;
+}
     .accepted{ background-color:#6495ED; }
     .rejected{ background-color:#EE4B2B; }
     .card-title{ font-size:20px; font-weight:bold; margin-bottom:10px;}
