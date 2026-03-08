@@ -46,6 +46,16 @@
 
 <div id="directory">Loading data...</div>
 
+  <script>
+const links = document.querySelectorAll('.nav a');
+const current = window.location.pathname.split("/").pop(); // e.g., "index.html"
+links.forEach(link => {
+  if(link.getAttribute('href') === current){
+    link.classList.add('active');
+  }
+});
+</script>
+  
 <script>
 async function loadSheet() {
   const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv";
@@ -57,6 +67,7 @@ async function loadSheet() {
   const container = document.getElementById("directory");
   container.innerHTML = "";
 
+  
   data.forEach(row => {
     let cardClass = "card";
     if(row["Did I Email Them?"]==="Yes") cardClass += " emailed";
