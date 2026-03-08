@@ -1,1 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PostDoctoring Map</title>
 
+<style>
+body{
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  margin:0;
+}
+
+#map{
+  height:100vh;
+  width:100%;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+</head>
+
+<body>
+
+<div class="nav">
+<a href="index.html">Directory</a> |
+<a href="map.html">Map</a>
+</div>
+
+<div id="map"></div>
+
+<script>
+
+const sheetURL =
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4ss2W452tpb0u3R931n4BH4tjexbMndvwjP_kCxaURkMqdYTlLMFBRbI8M4iXlSDV_IDjPgICw0Pb/pub?output=csv";
+
+const map = L.map("map").setView([39,-98],4);
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+  attribution:"© OpenStreetMap"
+}).addTo(map);
+
+async function loadSheet(){
+
+const response = await fetch(sheetURL);
+const csv = await response.text();
+
+const results = Papa.parse(csv,{
+  header:true,
+  skipEmptyLines:true
+});
+
+const data = results.data;
+
+data.forEach(row=>{
+
+const lat = parseFloat(row["Latitude"]);
+const lon = parseFloat(row["Longitude"]);
+
+if(!lat || !lon) return;
+
+const name = row["PI"];
+const school = row["School"];
+
+const marker = L.marker([lat,lon]).addTo(map);
+
+marker.bindPopup(`
+<b>${name}</b><br>
+${school}
+`);
+
+});
+
+}
+
+loadSheet();
+
+</script>
+
+</body>
+</html>
