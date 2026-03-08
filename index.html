@@ -75,6 +75,28 @@
 <div id="directory">Loading data...</div>
 
 <script>
+
+  
+  <div class="legend">
+  <b>Status</b>
+
+  <div class="legend-item">
+    <div class="legend-color" style="background:#e0e0e0;"></div>
+    Emailed
+  </div>
+
+  <div class="legend-item">
+    <div class="legend-color" style="background:#98FB98;"></div>
+    Accepted
+  </div>
+
+  <div class="legend-item">
+    <div class="legend-color" style="background:#FFCCCB;"></div>
+    Rejected
+  </div>
+</div>
+
+  
 async function loadSheet(){
 
   try {
@@ -156,25 +178,6 @@ for(const header in row){
 
 }
 
-
-  <div class="legend">
-  <b>Status</b>
-
-  <div class="legend-item">
-    <div class="legend-color" style="background:#e0e0e0;"></div>
-    Emailed
-  </div>
-
-  <div class="legend-item">
-    <div class="legend-color" style="background:#98FB98;"></div>
-    Accepted
-  </div>
-
-  <div class="legend-item">
-    <div class="legend-color" style="background:#FFCCCB;"></div>
-    Rejected
-  </div>
-</div>
 
 // run the function
 loadSheet();
