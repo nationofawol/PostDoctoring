@@ -165,9 +165,23 @@
       });
     }
 
+    
     document.getElementById("roiFilter").addEventListener("change", updateMarkers);
     document.getElementById("statusFilter").addEventListener("change", updateMarkers);
 
+
+marker.on("click", () => {
+  const card = document.getElementById(`card_${marker.myID}`);
+  if(card){
+    // Scroll to card
+    card.scrollIntoView({behavior:"smooth", block:"center"});
+    // Highlight visually
+    card.style.border = "2px solid #000";
+    setTimeout(()=> card.style.border = "1px solid #ddd", 2000);
+  }
+});
+    
+    
     loadSheet();
   </script>
 
