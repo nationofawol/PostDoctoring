@@ -72,15 +72,24 @@ async function loadSheet(){
     container.innerHTML = "";
 
     data.forEach(row => {
+      
+      
+let cardClass = "card";
 
 const emailed = row["Did I Email Them?"];
-const cardClass = emailed === "Yes" ? "card emailed" : "card";
+const decision = row["Accepted or Rejected?"];
 
-const accepted = row["Accepted or Rejected?"];
-const cardClass = accepted === "Accepted" ? "card accepted" : "card";
+if(emailed === "Yes"){
+  cardClass += " emailed";
+}
 
-const rejected = row["Accepted or Rejected?"];
-const cardClass = rejected === "Rejected" ? "card rejected" : "card";
+if(decision === "Accepted"){
+  cardClass += " accepted";
+}
+
+if(decision === "Rejected"){
+  cardClass += " rejected";
+}
 
       
       // Use "PI" as the title
