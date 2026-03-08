@@ -177,6 +177,19 @@ for(const header in row){
   </div>
 `;
 
+      // Generate a unique ID from PI
+const id = row["PI"].replace(/\s+/g, "_"); // e.g., "John Doe" → "John_Doe"
+
+// Create the card
+const card = document.createElement("div");
+card.id = `card_${id}`; // unique card ID
+card.className = cardClass;
+card.innerHTML = `<div class="card-title">${row["PI"]}</div>${cardContent}`;
+container.appendChild(card);
+
+// Store the marker with the same ID
+marker.myID = id;
+      
       container.innerHTML += card;
     });
 
