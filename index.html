@@ -89,15 +89,22 @@ const cardClass = rejected === "Rejected" ? "card rejected" : "card";
       let cardContent = "";
 
       // loop through all columns except "PI"
-      for(const header in row){
-        if(header !== "PI" && row[header]){
-          cardContent += `
-            <div class="field">
-              <b>${header}:</b> ${row[header]}
-            </div>
-          `;
-        }
-      }
+for(const header in row){
+
+  // skip columns we don't want displayed
+  if(header === "PI" || header === "Did I Email Them?"){
+    continue;
+  }
+
+  if(row[header]){
+    cardContent += `
+      <div class="field">
+        <b>${header}:</b> ${row[header]}
+      </div>
+    `;
+  }
+
+}
 
       const card = `
   <div class="${cardClass}">
